@@ -25,7 +25,7 @@ def get_existing_sql_data(table_name):
         df = pd.read_sql(query, engine)
         return df
     except:
-        print("Table " + table_name + " doesn't exist yet")
+        print('Table "' + table_name + '" doesn\'t exist yet')
         return
     
 def get_data_from_kaggle(dataset_name, datatypes, source_table_name, table_type, data_n_days_ago):
@@ -71,7 +71,7 @@ def isolate_new_data(existing_df, new_df):
 
 def clean_float_column(float_str):
     if float_str:
-        float_str = float_str.replace('$', '').strip()
+        float_str = str(float_str).replace('$', '').strip()
         
     return float_str
 
@@ -91,7 +91,7 @@ def clean_dataframe(df):
 
     return df
 
-def save_to_sql_in_slices(slice_size, df, table_name): #Only save new data and append. Note: This means no modifications will be made in the SQL table from the new data.
+def save_to_sql_in_slices(slice_size, df, table_name, datatypes): #Only save new data and append. Note: This means no modifications will be made in the SQL table from the new data.
     engine = connect_to_sql()
 
     for i in range(0, len(df), slice_size):
@@ -100,7 +100,8 @@ def save_to_sql_in_slices(slice_size, df, table_name): #Only save new data and a
             table_name,
             con = engine,
             if_exists = 'append',
-            index = False,
+            index = None,
+            dtype = datatypes
         )
 
     return
@@ -128,7 +129,7 @@ def get_new_old_combine_clean_save(dataset_name, datatypes, table_type, data_n_d
         print('No old data - saving new data to SQL')
 
     if new_df is not None:
-        save_to_sql_in_slices(slice_size, new_df, sql_table_name) # Save the DataFrame to a SQL table
+        save_to_sql_in_slices(slice_size, new_df, sql_table_name, datatypes) # Save the DataFrame to a SQL table
     else:
         print('No new data to save to SQL')
 
